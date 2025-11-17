@@ -1,0 +1,60 @@
+{
+  "expo": {
+    "name": "Location Tracker",
+    "slug": "location-tracker",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "userInterfaceStyle": "light",
+    "splash": {
+      "image": "./assets/splash.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#EEF1FF"
+    },
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "com.locationtracker.app",
+      "infoPlist": {
+        "NSLocationWhenInUseUsageDescription": "Location Tracker needs your location to share it with your friends.",
+        "NSLocationAlwaysAndWhenInUseUsageDescription": "Location Tracker needs your location to share real-time updates with your friends even when the app is in the background.",
+        "NSCameraUsageDescription": "Camera access is needed to scan QR codes for adding friends."
+      }
+    },
+    "android": {
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/adaptive-icon.png",
+        "backgroundColor": "#EEF1FF"
+      },
+      "package": "com.locationtracker.app",
+      "permissions": [
+        "ACCESS_COARSE_LOCATION",
+        "ACCESS_FINE_LOCATION",
+        "ACCESS_BACKGROUND_LOCATION",
+        "CAMERA"
+      ],
+      "config": {
+        "googleMaps": {
+          "apiKey": "YOUR_GOOGLE_MAPS_API_KEY"
+        }
+      }
+    },
+    "web": {
+      "favicon": "./assets/favicon.png"
+    },
+    "plugins": [
+      [
+        "expo-location",
+        {
+          "locationAlwaysAndWhenInUsePermission": "Allow Location Tracker to use your location to share it with friends."
+        }
+      ],
+      [
+        "expo-notifications",
+        {
+          "icon": "./assets/notification-icon.png",
+          "color": "#B1B2FF"
+        }
+      ]
+    ]
+  }
+}
