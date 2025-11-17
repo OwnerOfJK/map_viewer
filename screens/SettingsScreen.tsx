@@ -1,19 +1,23 @@
 import React from 'react';
 import { View, StyleSheet, TouchableOpacity } from 'react-native';
-import { createMaterialTopTabNavigator } from '@react-navigation/material-top-tabs';
 import { Ionicons } from '@expo/vector-icons';
+import { CustomTabView } from '../components/CustomTabView';
 import { ProfileTab } from './ProfileTab';
 import { PrivacyTab } from './PrivacyTab';
 import { FriendsTab } from './FriendsTab';
-import { Colors, FontSizes, FontWeights, Spacing } from '../styles/theme';
-
-const Tab = createMaterialTopTabNavigator();
+import { Colors, Spacing } from '../styles/theme';
 
 interface SettingsScreenProps {
   navigation: any;
 }
 
 export const SettingsScreen: React.FC<SettingsScreenProps> = ({ navigation }) => {
+  const tabs = [
+    { key: 'profile', title: 'Profile', component: ProfileTab },
+    { key: 'privacy', title: 'Privacy', component: PrivacyTab },
+    { key: 'friends', title: 'Friends', component: FriendsTab },
+  ];
+
   return (
     <View style={styles.container}>
       {/* Header */}
@@ -26,29 +30,8 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({ navigation }) =>
         </TouchableOpacity>
       </View>
 
-      {/* Tabs */}
-      <Tab.Navigator
-        screenOptions={{
-          tabBarActiveTintColor: Colors.primaryBlue,
-          tabBarInactiveTintColor: Colors.textSecondary,
-          tabBarLabelStyle: {
-            fontSize: FontSizes.sm,
-            fontWeight: FontWeights.semibold,
-            textTransform: 'none',
-          },
-          tabBarStyle: {
-            backgroundColor: Colors.white,
-          },
-          tabBarIndicatorStyle: {
-            backgroundColor: Colors.primaryBlue,
-            height: 3,
-          },
-        }}
-      >
-        <Tab.Screen name="Profile" component={ProfileTab} />
-        <Tab.Screen name="Privacy" component={PrivacyTab} />
-        <Tab.Screen name="Friends" component={FriendsTab} />
-      </Tab.Navigator>
+      {/* Custom Tabs */}
+      <CustomTabView tabs={tabs} />
     </View>
   );
 };
