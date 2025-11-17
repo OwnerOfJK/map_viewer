@@ -15,7 +15,7 @@ A privacy-first, real-time location sharing mobile application built with React 
 - **Framework**: React Native 0.81.5 with Expo SDK 54
 - **Language**: TypeScript 5.9
 - **React**: 19.1.0
-- **Navigation**: React Navigation v6 (Stack & Material Top Tabs)
+- **Navigation**: React Navigation v6 (Stack Navigator) + Custom Tab Implementation
 - **State Management**: React Context API
 - **Maps**: react-native-maps 1.20.1
 - **Location**: expo-location
