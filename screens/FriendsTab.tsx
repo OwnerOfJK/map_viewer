@@ -8,7 +8,7 @@ import {
   Modal,
   Alert,
 } from 'react-native';
-import { BarCodeScanner } from 'expo-barcode-scanner';
+import { CameraView, useCameraPermissions } from 'expo-camera';
 import QRCode from 'react-native-qrcode-svg';
 import { Ionicons } from '@expo/vector-icons';
 import { Avatar } from '../components/Avatar';
@@ -25,13 +25,13 @@ export const FriendsTab: React.FC = () => {
   const { friends, friendRequests, acceptFriendRequest, declineFriendRequest, removeFriend } = useFriends();
   const { user } = useUser();
   const { showToast } = useToast();
+  const [permission, requestPermission] = useCameraPermissions();
 
   const [searchQuery, setSearchQuery] = useState('');
   const [showAddModal, setShowAddModal] = useState(false);
   const [showQRModal, setShowQRModal] = useState(false);
   const [showScannerModal, setShowScannerModal] = useState(false);
   const [username, setUsername] = useState('');
-  const [hasPermission, setHasPermission] = useState<boolean | null>(null);
 
   const filteredFriends = friends.filter((friend) =>
     friend.username.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -49,17 +49,23 @@ export const FriendsTab: React.FC = () => {
   };
 
   const handleScanQR = async () => {
-    const { status } = await BarCodeScanner.requestPermissionsAsync();
-    setHasPermission(status === 'granted');
-
-    if (status === 'granted') {
-      setShowScannerModal(true);
-    } else {
-      Alert.alert('Permission Required', 'Camera permission is required to scan QR codes.');
+    if (!permission) {
+      // Still loading permissions
+      return;
     }
+
+    if (!permission.granted) {
+      const { granted } = await requestPermission();
+      if (!granted) {
+        Alert.alert('Permission Required', 'Camera permission is required to scan QR codes.');
+        return;
+      }
+    }
+
+    setShowScannerModal(true);
   };
 
-  const handleBarCodeScanned = ({ data }: { type: string; data: string }) => {
+  const handleBarCodeScanned = ({ data }: { data: string }) => {
     setShowScannerModal(false);
     showToast(`Scanned: ${data}`, 'success');
     // In real app, would send friend request based on scanned data
@@ -274,10 +280,14 @@ export const FriendsTab: React.FC = () => {
         onRequestClose={() => setShowScannerModal(false)}
       >
         <View style={styles.scannerContainer}>
-          {hasPermission && (
-            <BarCodeScanner
-              onBarCodeScanned={handleBarCodeScanned}
+          {permission?.granted && (
+            <CameraView
               style={StyleSheet.absoluteFillObject}
+              facing="back"
+              barcodeScannerSettings={{
+                barcodeTypes: ['qr'],
+              }}
+              onBarcodeScanned={handleBarCodeScanned}
             />
           )}
           <TouchableOpacity
