@@ -8,6 +8,7 @@ import {
   Animated,
   Dimensions,
 } from 'react-native';
+import { GestureDetector, Gesture } from 'react-native-gesture-handler';
 import MapView, { PROVIDER_GOOGLE } from 'react-native-maps';
 import { Ionicons } from '@expo/vector-icons';
 import { MapMarker } from '../components/MapMarker';
@@ -28,6 +29,7 @@ interface MapScreenProps {
 export const MapScreen: React.FC<MapScreenProps> = ({ navigation }) => {
   const mapRef = useRef<MapView>(null);
   const slideAnim = useRef(new Animated.Value(height)).current;
+  const dragOffset = useRef(new Animated.Value(0)).current;
 
   const { friends } = useFriends();
   const { user } = useUser();
@@ -74,8 +76,31 @@ export const MapScreen: React.FC<MapScreenProps> = ({ navigation }) => {
       useNativeDriver: true,
     }).start(() => {
       setSelectedFriend(null);
+      dragOffset.setValue(0);
     });
   };
+
+  const panGesture = Gesture.Pan()
+    .onUpdate((event) => {
+      // Only allow dragging down (positive translationY)
+      if (event.translationY > 0) {
+        dragOffset.setValue(event.translationY);
+      }
+    })
+    .onEnd((event) => {
+      // If dragged down more than 150px, dismiss
+      if (event.translationY > 150) {
+        closeFriendDetail();
+      } else {
+        // Spring back to original position
+        Animated.spring(dragOffset, {
+          toValue: 0,
+          useNativeDriver: true,
+          tension: 50,
+          friction: 7,
+        }).start();
+      }
+    });
 
   const getTimeSinceUpdate = (date: Date): string => {
     const seconds = Math.floor((new Date().getTime() - date.getTime()) / 1000);
@@ -160,15 +185,17 @@ export const MapScreen: React.FC<MapScreenProps> = ({ navigation }) => {
           activeOpacity={1}
           onPress={closeFriendDetail}
         >
-          <Animated.View
-            style={[
-              styles.detailCard,
-              {
-                transform: [{ translateY: slideAnim }],
-              },
-            ]}
-          >
-            <TouchableOpacity activeOpacity={1}>
+          <GestureDetector gesture={panGesture}>
+            <Animated.View
+              style={[
+                styles.detailCard,
+                {
+                  transform: [
+                    { translateY: Animated.add(slideAnim, dragOffset) }
+                  ],
+                },
+              ]}
+            >
               <View style={styles.detailHandle} />
 
               {selectedFriend && (
@@ -224,8 +251,8 @@ export const MapScreen: React.FC<MapScreenProps> = ({ navigation }) => {
                   />
                 </>
               )}
-            </TouchableOpacity>
-          </Animated.View>
+            </Animated.View>
+          </GestureDetector>
         </TouchableOpacity>
       </Modal>
     </View>
