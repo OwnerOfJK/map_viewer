@@ -12,11 +12,12 @@ A privacy-first, real-time location sharing mobile application built with React 
 
 ## 📱 Tech Stack
 
-- **Framework**: React Native with Expo SDK 51
-- **Language**: TypeScript
+- **Framework**: React Native 0.81.5 with Expo SDK 54
+- **Language**: TypeScript 5.9
+- **React**: 19.1.0
 - **Navigation**: React Navigation v6 (Stack & Material Top Tabs)
 - **State Management**: React Context API
-- **Maps**: react-native-maps
+- **Maps**: react-native-maps 1.20.1
 - **Location**: expo-location
 - **UI Components**: Custom components with consistent design system
 
@@ -44,7 +45,7 @@ A privacy-first, real-time location sharing mobile application built with React 
 
 1. Install dependencies:
 ```bash
-npm install --legacy-peer-deps
+npm install
 ```
 
 2. Start the development server:
