@@ -113,7 +113,6 @@ export const ProfileTab = () => {
           onChangeText={setBio}
           placeholder="Tell us about yourself..."
           multiline
-          maxLength={VALIDATION.MAX_BIO_LENGTH}
           style={styles.input}
         />
         <Text style={styles.charCount}>
