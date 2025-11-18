@@ -7,6 +7,7 @@ import {
   FlatList,
   Modal,
   Alert,
+  ScrollView,
 } from 'react-native';
 import { CameraView, useCameraPermissions } from 'expo-camera';
 import QRCode from 'react-native-qrcode-svg';
@@ -153,63 +154,69 @@ export const FriendsTab = () => {
 
   return (
     <View style={styles.container}>
-      {/* Search Bar */}
-      <View style={styles.searchContainer}>
-        <Input
-          value={searchQuery}
-          onChangeText={setSearchQuery}
-          placeholder="Search by username"
-          icon={<Ionicons name="search" size={20} color={Colors.textSecondary} />}
-        />
-      </View>
+      <ScrollView
+        style={styles.scrollView}
+        showsVerticalScrollIndicator={false}
+        contentContainerStyle={styles.scrollContent}
+      >
+        {/* Search Bar */}
+        <View style={styles.searchContainer}>
+          <Input
+            value={searchQuery}
+            onChangeText={setSearchQuery}
+            placeholder="Search by username"
+            icon={<Ionicons name="search" size={20} color={Colors.textSecondary} />}
+          />
+        </View>
 
-      {/* Add Friend Buttons */}
-      <View style={styles.addButtons}>
-        <Button
-          title="Add by Username"
-          variant="secondary"
-          onPress={() => setShowAddModal(true)}
-          style={styles.addButton}
-        />
-        <Button
-          title="Scan QR Code"
-          onPress={handleScanQR}
-          style={styles.addButton}
-        />
-        <Button
-          title="My QR Code"
-          variant="text"
-          onPress={() => setShowQRModal(true)}
-        />
-      </View>
+        {/* Add Friend Buttons */}
+        <View style={styles.addButtons}>
+          <Button
+            title="Add by Username"
+            variant="secondary"
+            onPress={() => setShowAddModal(true)}
+            style={styles.addButton}
+          />
+          <Button
+            title="Scan QR Code"
+            onPress={handleScanQR}
+            style={styles.addButton}
+          />
+          <Button
+            title="My QR Code"
+            variant="text"
+            onPress={() => setShowQRModal(true)}
+          />
+        </View>
 
-      {/* Friend Requests */}
-      {friendRequests.length > 0 && (
+        {/* Friend Requests */}
+        {friendRequests.length > 0 && (
+          <View style={styles.section}>
+            <Text style={styles.sectionTitle}>
+              Pending Requests ({friendRequests.length})
+            </Text>
+            <FlatList
+              data={friendRequests}
+              renderItem={renderFriendRequest}
+              keyExtractor={(item: FriendRequest) => item.id}
+              scrollEnabled={false}
+            />
+          </View>
+        )}
+
+        {/* Friends List */}
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>
-            Pending Requests ({friendRequests.length})
+            Your Friends ({filteredFriends.length})
           </Text>
           <FlatList
-            data={friendRequests}
-            renderItem={renderFriendRequest}
-            keyExtractor={(item) => item.id}
+            data={filteredFriends}
+            renderItem={renderFriend}
+            keyExtractor={(item: Friend) => item.id}
             scrollEnabled={false}
           />
         </View>
-      )}
-
-      {/* Friends List */}
-      <View style={styles.section}>
-        <Text style={styles.sectionTitle}>
-          Your Friends ({filteredFriends.length})
-        </Text>
-        <FlatList
-          data={filteredFriends}
-          renderItem={renderFriend}
-          keyExtractor={(item) => item.id}
-          scrollEnabled={false}
-        />
-      </View>
+      </ScrollView>
 
       {/* Add by Username Modal */}
       <Modal
@@ -225,7 +232,6 @@ export const FriendsTab = () => {
               value={username}
               onChangeText={setUsername}
               placeholder="Enter username"
-              autoCapitalize="none"
               style={styles.modalInput}
             />
             <View style={styles.modalButtons}>
@@ -306,6 +312,11 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: Colors.paleBlue,
+  },
+  scrollView: {
+    flex: 1,
+  },
+  scrollContent: {
     padding: Spacing.lg,
   },
   searchContainer: {
