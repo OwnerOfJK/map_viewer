@@ -8,6 +8,7 @@ import {
   Animated,
   Dimensions,
   ScrollView,
+  Pressable,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { Avatar } from './Avatar';
@@ -58,9 +59,9 @@ export const FriendDetailModal: React.FC<FriendDetailModalProps> = ({
               transform: [{ translateY: slideAnim }],
             },
           ]}
-          onStartShouldSetResponder={() => true}
         >
-          <View style={styles.detailHandle} />
+          <Pressable>
+            <View style={styles.detailHandle} />
 
           {selectedFriends.length === 1 ? (
             // Single friend view
@@ -160,6 +161,7 @@ export const FriendDetailModal: React.FC<FriendDetailModalProps> = ({
               </ScrollView>
             </>
           ) : null}
+          </Pressable>
         </Animated.View>
       </TouchableOpacity>
     </Modal>
