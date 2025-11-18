@@ -33,7 +33,7 @@ export const MapMarker = ({ friend, pooledMarker, onPress }: MapMarkerProps) => 
         ])
       ).start();
     }
-  }, [friend?.sharingLevel, friend?.isOnline, pulseAnim]);
+  }, [friend, pulseAnim]);
 
   const getBorderStyle = () => {
     if (isPooled) {

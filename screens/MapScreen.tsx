@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect, useCallback } from 'react';
 import {
   View,
   Text,
@@ -42,11 +42,7 @@ export const MapScreen = ({ navigation }: MapScreenProps) => {
   });
   const [currentZoom, setCurrentZoom] = useState<number>(MAP_SETTINGS.INITIAL_DELTA);
 
-  useEffect(() => {
-    centerOnUserLocation();
-  }, []);
-
-  const centerOnUserLocation = async () => {
+  const centerOnUserLocation = useCallback(async () => {
     if (user?.location) {
       const newRegion = {
         latitude: user.location.latitude,
@@ -58,7 +54,11 @@ export const MapScreen = ({ navigation }: MapScreenProps) => {
       setCurrentZoom(10);
       mapRef.current?.animateToRegion(newRegion, MAP_SETTINGS.ANIMATION_DURATION);
     }
-  };
+  }, [user?.location]);
+
+  useEffect(() => {
+    centerOnUserLocation();
+  }, [centerOnUserLocation]);
 
   const handleRegionChange = (newRegion: Region) => {
     setCurrentZoom(newRegion.latitudeDelta);

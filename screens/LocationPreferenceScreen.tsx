@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import {
   View,
   Text,
@@ -32,11 +32,7 @@ export const LocationPreferenceScreen = ({
 
   const { setSharingLevel, setUserLocation } = useUser();
 
-  useEffect(() => {
-    requestLocationPermission();
-  }, []);
-
-  const requestLocationPermission = async () => {
+  const requestLocationPermission = useCallback(async () => {
     try {
       const { status } = await Location.requestForegroundPermissionsAsync();
 
@@ -81,7 +77,11 @@ export const LocationPreferenceScreen = ({
       setLoading(false);
       Alert.alert('Error', 'Failed to get your location. Please try again.');
     }
-  };
+  }, [setUserLocation]);
+
+  useEffect(() => {
+    requestLocationPermission();
+  }, [requestLocationPermission]);
 
   const handleContinue = () => {
     if (selectedLevel) {
