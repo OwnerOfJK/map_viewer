@@ -67,7 +67,17 @@ export const MapScreen: React.FC<MapScreenProps> = ({ navigation }) => {
   const poolMarkers = (): PooledMarker[] => {
     const shouldPoolRealtime = currentZoom > ZOOM_THRESHOLD;
     const cityGroups: { [key: string]: Friend[] } = {};
+    const cityTotals: { [key: string]: number } = {};
 
+    // First pass: count ALL friends in each city (for display count)
+    friends.forEach((friend) => {
+      if (friend.location.city) {
+        const cityKey = `${friend.location.city}-${friend.location.country}`;
+        cityTotals[cityKey] = (cityTotals[cityKey] || 0) + 1;
+      }
+    });
+
+    // Second pass: group friends that should be pooled
     friends.forEach((friend) => {
       // Only pool city-level sharers by default, or all friends if zoomed out
       const shouldPool =
@@ -89,7 +99,7 @@ export const MapScreen: React.FC<MapScreenProps> = ({ navigation }) => {
         id: cityKey,
         location: friendsList[0].location,
         friends: friendsList,
-        count: friendsList.length,
+        count: cityTotals[cityKey], // Use total count of all friends in city
       }));
   };
 
