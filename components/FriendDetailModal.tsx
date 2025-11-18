@@ -1,14 +1,14 @@
-import React, { useRef } from 'react';
+import React, { useState } from 'react';
 import {
   View,
   Text,
   StyleSheet,
-  TouchableOpacity,
   Modal,
   Animated,
   Dimensions,
   ScrollView,
   Pressable,
+  TouchableOpacity,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { Avatar } from './Avatar';
@@ -47,11 +47,11 @@ export const FriendDetailModal: React.FC<FriendDetailModalProps> = ({
       animationType="none"
       onRequestClose={onClose}
     >
-      <TouchableOpacity
-        style={styles.modalOverlay}
-        activeOpacity={1}
-        onPress={onClose}
-      >
+      <View style={styles.modalOverlay}>
+        {/* Background overlay - tapping here closes the modal */}
+        <Pressable style={styles.backdrop} onPress={onClose} />
+
+        {/* Card content - separate from the backdrop */}
         <Animated.View
           style={[
             styles.detailCard,
@@ -60,8 +60,7 @@ export const FriendDetailModal: React.FC<FriendDetailModalProps> = ({
             },
           ]}
         >
-          <Pressable>
-            <View style={styles.detailHandle} />
+          <View style={styles.detailHandle} />
 
           {selectedFriends.length === 1 ? (
             // Single friend view
@@ -122,9 +121,6 @@ export const FriendDetailModal: React.FC<FriendDetailModalProps> = ({
               <Text style={styles.detailName}>
                 {selectedFriends[0].location.city}, {selectedFriends[0].location.country}
               </Text>
-              <Text style={styles.detailUsername}>
-                {selectedFriends.length} {selectedFriends.length === 1 ? 'person' : 'people'}
-              </Text>
 
               <ScrollView style={styles.friendsList} showsVerticalScrollIndicator={false}>
                 {selectedFriends
@@ -161,9 +157,8 @@ export const FriendDetailModal: React.FC<FriendDetailModalProps> = ({
               </ScrollView>
             </>
           ) : null}
-          </Pressable>
         </Animated.View>
-      </TouchableOpacity>
+      </View>
     </Modal>
   );
 };
@@ -173,6 +168,9 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: 'rgba(0, 0, 0, 0.5)',
     justifyContent: 'flex-end',
+  },
+  backdrop: {
+    ...StyleSheet.absoluteFillObject,
   },
   detailCard: {
     backgroundColor: Colors.white,
