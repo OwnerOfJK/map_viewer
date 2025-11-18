@@ -18,6 +18,84 @@ import { Friend } from '../utils/types';
 
 const { height } = Dimensions.get('window');
 
+type SharingTab = 'city' | 'realtime';
+
+interface MultipleFriendsViewProps {
+  selectedFriends: Friend[];
+  getTimeSinceUpdate: (date: Date) => string;
+}
+
+const MultipleFreindsView: React.FC<MultipleFriendsViewProps> = ({
+  selectedFriends,
+  getTimeSinceUpdate,
+}) => {
+  const cityFriends = selectedFriends.filter((f) => f.sharingLevel === 'city');
+  const realtimeFriends = selectedFriends.filter((f) => f.sharingLevel === 'realtime');
+
+  // Default to the tab that has friends, preferring city if both have friends
+  const defaultTab: SharingTab = cityFriends.length > 0 ? 'city' : 'realtime';
+  const [activeTab, setActiveTab] = useState<SharingTab>(defaultTab);
+
+  const displayedFriends = activeTab === 'city' ? cityFriends : realtimeFriends;
+
+  return (
+    <>
+      <Text style={styles.detailName}>
+        {selectedFriends[0].location.city}, {selectedFriends[0].location.country}
+      </Text>
+
+      {/* Tabs */}
+      <View style={styles.tabContainer}>
+        {cityFriends.length > 0 && (
+          <TouchableOpacity
+            style={[styles.tab, activeTab === 'city' && styles.activeTab]}
+            onPress={() => setActiveTab('city')}
+          >
+            <Text style={[styles.tabText, activeTab === 'city' && styles.activeTabText]}>
+              City-level ({cityFriends.length})
+            </Text>
+          </TouchableOpacity>
+        )}
+        {realtimeFriends.length > 0 && (
+          <TouchableOpacity
+            style={[styles.tab, activeTab === 'realtime' && styles.activeTab]}
+            onPress={() => setActiveTab('realtime')}
+          >
+            <Text style={[styles.tabText, activeTab === 'realtime' && styles.activeTabText]}>
+              Real-time ({realtimeFriends.length})
+            </Text>
+          </TouchableOpacity>
+        )}
+      </View>
+
+      <ScrollView style={styles.friendsList} showsVerticalScrollIndicator={false}>
+        {displayedFriends
+          .sort((a, b) => b.lastUpdated.getTime() - a.lastUpdated.getTime())
+          .map((friend) => (
+            <View key={friend.id} style={styles.friendItem}>
+              <Avatar
+                imageUri={friend.avatarUri}
+                size="medium"
+                status={friend.isOnline ? 'online' : 'offline'}
+                name={friend.name}
+              />
+              <View style={styles.friendItemInfo}>
+                <Text style={styles.friendItemName}>{friend.name}</Text>
+                <Text style={styles.friendItemUsername}>@{friend.username}</Text>
+                <View style={styles.friendItemDetails}>
+                  <Ionicons name="time-outline" size={12} color={Colors.textSecondary} />
+                  <Text style={styles.friendItemDetailText}>
+                    {getTimeSinceUpdate(friend.lastUpdated)}
+                  </Text>
+                </View>
+              </View>
+            </View>
+          ))}
+      </ScrollView>
+    </>
+  );
+};
+
 interface FriendDetailModalProps {
   selectedFriends: Friend[];
   visible: boolean;
@@ -116,46 +194,11 @@ export const FriendDetailModal: React.FC<FriendDetailModalProps> = ({
               />
             </>
           ) : selectedFriends.length > 1 ? (
-            // Multiple friends list view
-            <>
-              <Text style={styles.detailName}>
-                {selectedFriends[0].location.city}, {selectedFriends[0].location.country}
-              </Text>
-
-              <ScrollView style={styles.friendsList} showsVerticalScrollIndicator={false}>
-                {selectedFriends
-                  .sort((a, b) => b.lastUpdated.getTime() - a.lastUpdated.getTime())
-                  .map((friend) => (
-                    <View key={friend.id} style={styles.friendItem}>
-                      <Avatar
-                        imageUri={friend.avatarUri}
-                        size="medium"
-                        status={friend.isOnline ? 'online' : 'offline'}
-                        name={friend.name}
-                      />
-                      <View style={styles.friendItemInfo}>
-                        <Text style={styles.friendItemName}>{friend.name}</Text>
-                        <Text style={styles.friendItemUsername}>@{friend.username}</Text>
-                        <View style={styles.friendItemDetails}>
-                          <Ionicons name="time-outline" size={12} color={Colors.textSecondary} />
-                          <Text style={styles.friendItemDetailText}>
-                            {getTimeSinceUpdate(friend.lastUpdated)}
-                          </Text>
-                          <Ionicons
-                            name={friend.sharingLevel === 'realtime' ? 'navigate' : 'business'}
-                            size={12}
-                            color={Colors.textSecondary}
-                            style={styles.sharingIcon}
-                          />
-                          <Text style={styles.friendItemDetailText}>
-                            {friend.sharingLevel === 'realtime' ? 'Real-time' : 'City-level'}
-                          </Text>
-                        </View>
-                      </View>
-                    </View>
-                  ))}
-              </ScrollView>
-            </>
+            // Multiple friends list view with tabs
+            <MultipleFreindsView
+              selectedFriends={selectedFriends}
+              getTimeSinceUpdate={getTimeSinceUpdate}
+            />
           ) : null}
         </Animated.View>
       </View>
@@ -205,6 +248,33 @@ const styles = StyleSheet.create({
     color: Colors.textSecondary,
     textAlign: 'center',
     marginBottom: Spacing.xl,
+  },
+  tabContainer: {
+    flexDirection: 'row',
+    marginBottom: Spacing.md,
+    borderRadius: BorderRadius.sm,
+    backgroundColor: Colors.paleBlue,
+    padding: 4,
+  },
+  tab: {
+    flex: 1,
+    paddingVertical: Spacing.sm,
+    paddingHorizontal: Spacing.md,
+    borderRadius: BorderRadius.sm - 2,
+    alignItems: 'center',
+  },
+  activeTab: {
+    backgroundColor: Colors.white,
+    ...Shadows.small,
+  },
+  tabText: {
+    fontSize: FontSizes.sm,
+    fontWeight: FontWeights.medium,
+    color: Colors.textSecondary,
+  },
+  activeTabText: {
+    color: Colors.primaryBlue,
+    fontWeight: FontWeights.semibold,
   },
   detailInfo: {
     marginBottom: Spacing.xl,
