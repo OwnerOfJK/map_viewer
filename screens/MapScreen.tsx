@@ -287,7 +287,7 @@ export const MapScreen: React.FC<MapScreenProps> = ({ navigation }) => {
                     style={styles.messageButton}
                   />
                 </>
-              ) : (
+              ) : selectedFriends.length > 1 ? (
                 // Multiple friends list view
                 <>
                   <Text style={styles.detailName}>
@@ -331,7 +331,7 @@ export const MapScreen: React.FC<MapScreenProps> = ({ navigation }) => {
                       ))}
                   </ScrollView>
                 </>
-              )}
+              ) : null}
             </TouchableOpacity>
           </Animated.View>
         </TouchableOpacity>
