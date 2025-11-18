@@ -1,21 +1,23 @@
 import React, { useEffect, useRef } from 'react';
-import { View, StyleSheet, Animated } from 'react-native';
+import { View, StyleSheet, Animated, Text } from 'react-native';
 import { Marker } from 'react-native-maps';
 import { Avatar } from './Avatar';
-import { Colors } from '../styles/theme';
-import { Friend } from '../utils/types';
+import { Colors, FontSizes, FontWeights } from '../styles/theme';
+import { Friend, PooledMarker } from '../utils/types';
 
 interface MapMarkerProps {
-  friend: Friend;
+  friend?: Friend;
+  pooledMarker?: PooledMarker;
   onPress: () => void;
 }
 
-export const MapMarker: React.FC<MapMarkerProps> = ({ friend, onPress }) => {
+export const MapMarker: React.FC<MapMarkerProps> = ({ friend, pooledMarker, onPress }) => {
   const pulseAnim = useRef(new Animated.Value(1)).current;
+  const isPooled = !!pooledMarker;
 
   useEffect(() => {
-    // Only animate for real-time markers that are online
-    if (friend.sharingLevel === 'realtime' && friend.isOnline) {
+    // Only animate for individual real-time markers that are online
+    if (friend && friend.sharingLevel === 'realtime' && friend.isOnline) {
       Animated.loop(
         Animated.sequence([
           Animated.timing(pulseAnim, {
@@ -31,10 +33,19 @@ export const MapMarker: React.FC<MapMarkerProps> = ({ friend, onPress }) => {
         ])
       ).start();
     }
-  }, [friend.sharingLevel, friend.isOnline, pulseAnim]);
+  }, [friend?.sharingLevel, friend?.isOnline, pulseAnim]);
 
   const getBorderStyle = () => {
-    if (!friend.isOnline) {
+    if (isPooled) {
+      // Pooled markers use a neutral border
+      return {
+        borderWidth: 3,
+        borderColor: Colors.secondaryBlue,
+        borderStyle: 'solid' as const,
+      };
+    }
+
+    if (!friend?.isOnline) {
       return {
         borderWidth: 2,
         borderColor: Colors.darkGray,
@@ -57,17 +68,19 @@ export const MapMarker: React.FC<MapMarkerProps> = ({ friend, onPress }) => {
     };
   };
 
+  const location = isPooled ? pooledMarker.location : friend!.location;
+
   return (
     <Marker
       coordinate={{
-        latitude: friend.location.latitude,
-        longitude: friend.location.longitude,
+        latitude: location.latitude,
+        longitude: location.longitude,
       }}
       onPress={onPress}
       tracksViewChanges={false}
     >
       <View style={styles.markerContainer}>
-        {friend.sharingLevel === 'realtime' && friend.isOnline && (
+        {friend && friend.sharingLevel === 'realtime' && friend.isOnline && (
           <Animated.View
             style={[
               styles.pulseCircle,
@@ -78,11 +91,17 @@ export const MapMarker: React.FC<MapMarkerProps> = ({ friend, onPress }) => {
           />
         )}
         <View style={[styles.markerBorder, getBorderStyle()]}>
-          <Avatar
-            imageUri={friend.avatarUri}
-            size="small"
-            name={friend.name}
-          />
+          {isPooled ? (
+            <View style={styles.countContainer}>
+              <Text style={styles.countText}>{pooledMarker.count}</Text>
+            </View>
+          ) : (
+            <Avatar
+              imageUri={friend!.avatarUri}
+              size="small"
+              name={friend!.name}
+            />
+          )}
         </View>
       </View>
     </Marker>
@@ -106,5 +125,18 @@ const styles = StyleSheet.create({
     borderRadius: 25,
     backgroundColor: Colors.primaryBlue,
     opacity: 0.3,
+  },
+  countContainer: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: Colors.white,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  countText: {
+    fontSize: FontSizes.md,
+    fontWeight: FontWeights.bold,
+    color: Colors.primaryBlue,
   },
 });

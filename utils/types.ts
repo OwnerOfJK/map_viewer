@@ -54,4 +54,16 @@ export type Region = {
   longitudeDelta: number;
 };
 
+export type PooledMarker = {
+  id: string;
+  location: {
+    latitude: number;
+    longitude: number;
+    city?: string;
+    country?: string;
+  };
+  friends: Friend[];
+  count: number;
+};
+
 export type ToastType = 'success' | 'error' | 'info';
