@@ -7,6 +7,7 @@ import {
   Modal,
   Animated,
   Dimensions,
+  ScrollView,
 } from 'react-native';
 import MapView, { PROVIDER_GOOGLE } from 'react-native-maps';
 import { Ionicons } from '@expo/vector-icons';
@@ -16,10 +17,13 @@ import { Button } from '../components/Button';
 import { Colors, FontSizes, FontWeights, Spacing, BorderRadius, Shadows } from '../styles/theme';
 import { useFriends } from '../context/FriendsContext';
 import { useUser } from '../context/UserContext';
-import { Friend, Region } from '../utils/types';
+import { Friend, Region, PooledMarker } from '../utils/types';
 import { MAP_SETTINGS } from '../utils/constants';
 
 const { height } = Dimensions.get('window');
+
+// Zoom level threshold for pooling real-time sharers with city-level sharers
+const ZOOM_THRESHOLD = 10;
 
 interface MapScreenProps {
   navigation: any;
@@ -32,13 +36,14 @@ export const MapScreen: React.FC<MapScreenProps> = ({ navigation }) => {
   const { friends } = useFriends();
   const { user } = useUser();
 
-  const [selectedFriend, setSelectedFriend] = useState<Friend | null>(null);
+  const [selectedFriends, setSelectedFriends] = useState<Friend[]>([]);
   const [region, setRegion] = useState<Region>({
     latitude: 20,
     longitude: 0,
     latitudeDelta: MAP_SETTINGS.INITIAL_DELTA,
     longitudeDelta: MAP_SETTINGS.INITIAL_DELTA,
   });
+  const [currentZoom, setCurrentZoom] = useState<number>(MAP_SETTINGS.INITIAL_DELTA);
 
   useEffect(() => {
     centerOnUserLocation();
@@ -53,12 +58,46 @@ export const MapScreen: React.FC<MapScreenProps> = ({ navigation }) => {
         longitudeDelta: 10,
       };
       setRegion(newRegion);
+      setCurrentZoom(10);
       mapRef.current?.animateToRegion(newRegion, MAP_SETTINGS.ANIMATION_DURATION);
     }
   };
 
-  const handleMarkerPress = (friend: Friend) => {
-    setSelectedFriend(friend);
+  const handleRegionChange = (newRegion: Region) => {
+    setCurrentZoom(newRegion.latitudeDelta);
+  };
+
+  const poolMarkers = (): PooledMarker[] => {
+    const shouldPoolRealtime = currentZoom > ZOOM_THRESHOLD;
+    const cityGroups: { [key: string]: Friend[] } = {};
+
+    friends.forEach((friend) => {
+      // Only pool city-level sharers by default, or all friends if zoomed out
+      const shouldPool =
+        friend.sharingLevel === 'city' ||
+        (shouldPoolRealtime && friend.sharingLevel === 'realtime');
+
+      if (shouldPool && friend.location.city) {
+        const cityKey = `${friend.location.city}-${friend.location.country}`;
+        if (!cityGroups[cityKey]) {
+          cityGroups[cityKey] = [];
+        }
+        cityGroups[cityKey].push(friend);
+      }
+    });
+
+    return Object.entries(cityGroups)
+      .filter(([_, friendsList]) => friendsList.length > 0)
+      .map(([cityKey, friendsList]) => ({
+        id: cityKey,
+        location: friendsList[0].location,
+        friends: friendsList,
+        count: friendsList.length,
+      }));
+  };
+
+  const handleMarkerPress = (friendsToShow: Friend[]) => {
+    setSelectedFriends(friendsToShow);
     Animated.spring(slideAnim, {
       toValue: 0,
       useNativeDriver: true,
@@ -73,7 +112,7 @@ export const MapScreen: React.FC<MapScreenProps> = ({ navigation }) => {
       duration: 300,
       useNativeDriver: true,
     }).start(() => {
-      setSelectedFriend(null);
+      setSelectedFriends([]);
     });
   };
 
@@ -109,6 +148,19 @@ export const MapScreen: React.FC<MapScreenProps> = ({ navigation }) => {
     },
   ];
 
+  const pooledMarkers = poolMarkers();
+  const pooledFriendIds = new Set(
+    pooledMarkers.flatMap((marker) => marker.friends.map((f) => f.id))
+  );
+
+  // Get individual markers (real-time sharers when zoomed in)
+  const individualMarkers = friends.filter(
+    (friend) =>
+      !pooledFriendIds.has(friend.id) &&
+      friend.sharingLevel === 'realtime' &&
+      currentZoom <= ZOOM_THRESHOLD
+  );
+
   return (
     <View style={styles.container}>
       <MapView
@@ -119,12 +171,23 @@ export const MapScreen: React.FC<MapScreenProps> = ({ navigation }) => {
         customMapStyle={mapStyle}
         showsUserLocation
         showsMyLocationButton={false}
+        onRegionChangeComplete={handleRegionChange}
       >
-        {friends.map((friend) => (
+        {/* Pooled markers */}
+        {pooledMarkers.map((pooledMarker) => (
+          <MapMarker
+            key={pooledMarker.id}
+            pooledMarker={pooledMarker}
+            onPress={() => handleMarkerPress(pooledMarker.friends)}
+          />
+        ))}
+
+        {/* Individual real-time markers when zoomed in */}
+        {individualMarkers.map((friend) => (
           <MapMarker
             key={friend.id}
             friend={friend}
-            onPress={() => handleMarkerPress(friend)}
+            onPress={() => handleMarkerPress([friend])}
           />
         ))}
       </MapView>
@@ -150,7 +213,7 @@ export const MapScreen: React.FC<MapScreenProps> = ({ navigation }) => {
 
       {/* Friend Detail Modal */}
       <Modal
-        visible={selectedFriend !== null}
+        visible={selectedFriends.length > 0}
         transparent
         animationType="none"
         onRequestClose={closeFriendDetail}
@@ -171,45 +234,46 @@ export const MapScreen: React.FC<MapScreenProps> = ({ navigation }) => {
             <TouchableOpacity activeOpacity={1}>
               <View style={styles.detailHandle} />
 
-              {selectedFriend && (
+              {selectedFriends.length === 1 ? (
+                // Single friend view
                 <>
                   <View style={styles.detailHeader}>
                     <Avatar
-                      imageUri={selectedFriend.avatarUri}
+                      imageUri={selectedFriends[0].avatarUri}
                       size="large"
-                      status={selectedFriend.isOnline ? 'online' : 'offline'}
-                      name={selectedFriend.name}
+                      status={selectedFriends[0].isOnline ? 'online' : 'offline'}
+                      name={selectedFriends[0].name}
                     />
                   </View>
 
-                  <Text style={styles.detailName}>{selectedFriend.name}</Text>
-                  <Text style={styles.detailUsername}>@{selectedFriend.username}</Text>
+                  <Text style={styles.detailName}>{selectedFriends[0].name}</Text>
+                  <Text style={styles.detailUsername}>@{selectedFriends[0].username}</Text>
 
                   <View style={styles.detailInfo}>
                     <View style={styles.infoRow}>
                       <Ionicons name="time-outline" size={16} color={Colors.textSecondary} />
                       <Text style={styles.infoText}>
-                        Updated {getTimeSinceUpdate(selectedFriend.lastUpdated)}
+                        Updated {getTimeSinceUpdate(selectedFriends[0].lastUpdated)}
                       </Text>
                     </View>
 
                     <View style={styles.infoRow}>
                       <Ionicons name="location-outline" size={16} color={Colors.textSecondary} />
                       <Text style={styles.infoText}>
-                        {selectedFriend.sharingLevel === 'city'
-                          ? `${selectedFriend.location.city}, ${selectedFriend.location.country}`
-                          : `${selectedFriend.location.latitude.toFixed(4)}, ${selectedFriend.location.longitude.toFixed(4)}`}
+                        {selectedFriends[0].sharingLevel === 'city'
+                          ? `${selectedFriends[0].location.city}, ${selectedFriends[0].location.country}`
+                          : `${selectedFriends[0].location.latitude.toFixed(4)}, ${selectedFriends[0].location.longitude.toFixed(4)}`}
                       </Text>
                     </View>
 
                     <View style={styles.infoRow}>
                       <Ionicons
-                        name={selectedFriend.sharingLevel === 'realtime' ? 'navigate' : 'business'}
+                        name={selectedFriends[0].sharingLevel === 'realtime' ? 'navigate' : 'business'}
                         size={16}
                         color={Colors.textSecondary}
                       />
                       <Text style={styles.infoText}>
-                        {selectedFriend.sharingLevel === 'realtime'
+                        {selectedFriends[0].sharingLevel === 'realtime'
                           ? 'Real-time location'
                           : 'City-level sharing'}
                       </Text>
@@ -222,6 +286,50 @@ export const MapScreen: React.FC<MapScreenProps> = ({ navigation }) => {
                     onPress={() => {}}
                     style={styles.messageButton}
                   />
+                </>
+              ) : (
+                // Multiple friends list view
+                <>
+                  <Text style={styles.detailName}>
+                    {selectedFriends[0].location.city}, {selectedFriends[0].location.country}
+                  </Text>
+                  <Text style={styles.detailUsername}>
+                    {selectedFriends.length} {selectedFriends.length === 1 ? 'person' : 'people'}
+                  </Text>
+
+                  <ScrollView style={styles.friendsList} showsVerticalScrollIndicator={false}>
+                    {selectedFriends
+                      .sort((a, b) => b.lastUpdated.getTime() - a.lastUpdated.getTime())
+                      .map((friend) => (
+                        <View key={friend.id} style={styles.friendItem}>
+                          <Avatar
+                            imageUri={friend.avatarUri}
+                            size="medium"
+                            status={friend.isOnline ? 'online' : 'offline'}
+                            name={friend.name}
+                          />
+                          <View style={styles.friendItemInfo}>
+                            <Text style={styles.friendItemName}>{friend.name}</Text>
+                            <Text style={styles.friendItemUsername}>@{friend.username}</Text>
+                            <View style={styles.friendItemDetails}>
+                              <Ionicons name="time-outline" size={12} color={Colors.textSecondary} />
+                              <Text style={styles.friendItemDetailText}>
+                                {getTimeSinceUpdate(friend.lastUpdated)}
+                              </Text>
+                              <Ionicons
+                                name={friend.sharingLevel === 'realtime' ? 'navigate' : 'business'}
+                                size={12}
+                                color={Colors.textSecondary}
+                                style={styles.sharingIcon}
+                              />
+                              <Text style={styles.friendItemDetailText}>
+                                {friend.sharingLevel === 'realtime' ? 'Real-time' : 'City-level'}
+                              </Text>
+                            </View>
+                          </View>
+                        </View>
+                      ))}
+                  </ScrollView>
                 </>
               )}
             </TouchableOpacity>
@@ -327,5 +435,43 @@ const styles = StyleSheet.create({
   },
   messageButton: {
     marginTop: Spacing.md,
+  },
+  friendsList: {
+    marginTop: Spacing.lg,
+    maxHeight: 400,
+  },
+  friendItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingVertical: Spacing.md,
+    borderBottomWidth: 1,
+    borderBottomColor: Colors.lightBlue,
+  },
+  friendItemInfo: {
+    marginLeft: Spacing.md,
+    flex: 1,
+  },
+  friendItemName: {
+    fontSize: FontSizes.md,
+    fontWeight: FontWeights.semibold,
+    color: Colors.textPrimary,
+  },
+  friendItemUsername: {
+    fontSize: FontSizes.sm,
+    color: Colors.textSecondary,
+    marginTop: 2,
+  },
+  friendItemDetails: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginTop: Spacing.xs,
+  },
+  friendItemDetailText: {
+    fontSize: FontSizes.xs,
+    color: Colors.textSecondary,
+    marginLeft: 4,
+  },
+  sharingIcon: {
+    marginLeft: Spacing.sm,
   },
 });
