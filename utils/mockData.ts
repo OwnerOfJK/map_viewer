@@ -4,14 +4,20 @@ const firstNames = [
   'Emma', 'Liam', 'Olivia', 'Noah', 'Ava', 'Ethan', 'Sophia', 'Mason',
   'Isabella', 'William', 'Mia', 'James', 'Charlotte', 'Benjamin', 'Amelia',
   'Lucas', 'Harper', 'Henry', 'Evelyn', 'Alexander', 'Abigail', 'Michael',
-  'Emily', 'Daniel', 'Elizabeth',
+  'Emily', 'Daniel', 'Elizabeth', 'Matthew', 'Ella', 'Jackson', 'Avery',
+  'David', 'Sofia', 'Joseph', 'Scarlett', 'Carter', 'Grace', 'Owen', 'Chloe',
+  'Wyatt', 'Victoria', 'John', 'Riley', 'Jack', 'Aria', 'Luke', 'Lily',
+  'Jayden', 'Aubrey', 'Dylan', 'Zoey', 'Grayson',
 ];
 
 const lastNames = [
   'Smith', 'Johnson', 'Williams', 'Brown', 'Jones', 'Garcia', 'Miller', 'Davis',
   'Rodriguez', 'Martinez', 'Hernandez', 'Lopez', 'Gonzalez', 'Wilson', 'Anderson',
   'Thomas', 'Taylor', 'Moore', 'Jackson', 'Martin', 'Lee', 'Walker', 'Hall',
-  'Allen', 'Young',
+  'Allen', 'Young', 'King', 'Wright', 'Scott', 'Torres', 'Nguyen', 'Hill',
+  'Flores', 'Green', 'Adams', 'Nelson', 'Baker', 'Mitchell', 'Perez', 'Roberts',
+  'Turner', 'Phillips', 'Campbell', 'Parker', 'Evans', 'Edwards', 'Collins',
+  'Stewart', 'Morris', 'Rogers', 'Reed',
 ];
 
 const cities = [
@@ -48,7 +54,16 @@ export const generateMockFriends = (count: number): Friend[] => {
   for (let i = 0; i < count; i++) {
     const firstName = firstNames[i % firstNames.length];
     const lastName = lastNames[i % lastNames.length];
-    const city = cities[i % cities.length];
+
+    // Make 35 friends in New York to showcase pooling feature
+    // The rest distributed across other cities
+    let city;
+    if (i < 35) {
+      city = cities[0]; // New York
+    } else {
+      city = cities[(i - 35) % (cities.length - 1) + 1];
+    }
+
     const sharingLevel = Math.random() > 0.5 ? 'realtime' : 'city';
     const isOnline = Math.random() > 0.3; // 70% chance of being online
 

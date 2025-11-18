@@ -15,7 +15,7 @@ interface FriendsContextType {
 const FriendsContext = createContext<FriendsContextType | undefined>(undefined);
 
 export const FriendsProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
-  const [friends, setFriends] = useState<Friend[]>(generateMockFriends(25));
+  const [friends, setFriends] = useState<Friend[]>(generateMockFriends(50));
   const [friendRequests, setFriendRequests] = useState<FriendRequest[]>(
     generateMockFriendRequests(3)
   );
