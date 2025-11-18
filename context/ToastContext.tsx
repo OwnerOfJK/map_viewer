@@ -16,7 +16,11 @@ interface ToastState {
 
 const ToastContext = createContext<ToastContextType | undefined>(undefined);
 
-export const ToastProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
+interface ToastProviderProps {
+  children: ReactNode;
+}
+
+export const ToastProvider = ({ children }: ToastProviderProps) => {
   const [toast, setToast] = useState<ToastState>({
     visible: false,
     message: '',

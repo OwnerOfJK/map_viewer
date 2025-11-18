@@ -20,7 +20,7 @@ interface InputProps extends TextInputProps {
   style?: ViewStyle;
 }
 
-export const Input: React.FC<InputProps> = ({
+export const Input = ({
   value,
   onChangeText,
   placeholder,
@@ -30,7 +30,7 @@ export const Input: React.FC<InputProps> = ({
   error,
   style,
   ...props
-}) => {
+}: InputProps) => {
   const [isFocused, setIsFocused] = useState(false);
 
   return (

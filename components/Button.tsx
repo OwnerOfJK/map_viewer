@@ -22,7 +22,7 @@ interface ButtonProps {
   style?: ViewStyle;
 }
 
-export const Button: React.FC<ButtonProps> = ({
+export const Button = ({
   title,
   onPress,
   variant = 'primary',
@@ -30,7 +30,7 @@ export const Button: React.FC<ButtonProps> = ({
   loading = false,
   icon,
   style,
-}) => {
+}: ButtonProps) => {
   const scaleAnim = React.useRef(new Animated.Value(1)).current;
 
   const handlePressIn = () => {

@@ -16,7 +16,7 @@ import { useUser } from '../context/UserContext';
 import { useToast } from '../context/ToastContext';
 import { VALIDATION } from '../utils/constants';
 
-export const ProfileTab: React.FC = () => {
+export const ProfileTab = () => {
   const { user, updateProfile } = useUser();
   const { showToast } = useToast();
 

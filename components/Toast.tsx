@@ -10,12 +10,12 @@ interface ToastProps {
   onDismiss: () => void;
 }
 
-export const Toast: React.FC<ToastProps> = ({
+export const Toast = ({
   message,
   type = 'info',
   duration = 3000,
   onDismiss,
-}) => {
+}: ToastProps) => {
   const translateY = useRef(new Animated.Value(-100)).current;
 
   useEffect(() => {

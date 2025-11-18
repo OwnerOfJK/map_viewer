@@ -15,12 +15,12 @@ interface CardProps {
   style?: ViewStyle;
 }
 
-export const Card: React.FC<CardProps> = ({
+export const Card = ({
   children,
   onPress,
   selected = false,
   style,
-}) => {
+}: CardProps) => {
   const scaleAnim = React.useRef(new Animated.Value(1)).current;
 
   const handlePressIn = () => {

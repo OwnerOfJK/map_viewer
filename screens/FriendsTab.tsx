@@ -21,7 +21,7 @@ import { useUser } from '../context/UserContext';
 import { useToast } from '../context/ToastContext';
 import { Friend, FriendRequest } from '../utils/types';
 
-export const FriendsTab: React.FC = () => {
+export const FriendsTab = () => {
   const { friends, friendRequests, acceptFriendRequest, declineFriendRequest, removeFriend } = useFriends();
   const { user } = useUser();
   const { showToast } = useToast();

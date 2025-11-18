@@ -13,13 +13,13 @@ interface AvatarProps {
   style?: ViewStyle;
 }
 
-export const Avatar: React.FC<AvatarProps> = ({
+export const Avatar = ({
   imageUri,
   size = 'medium',
   status,
   name = '',
   style,
-}) => {
+}: AvatarProps) => {
   const getSize = (): number => {
     switch (size) {
       case 'small':

@@ -11,7 +11,7 @@ interface MapMarkerProps {
   onPress: () => void;
 }
 
-export const MapMarker: React.FC<MapMarkerProps> = ({ friend, pooledMarker, onPress }) => {
+export const MapMarker = ({ friend, pooledMarker, onPress }: MapMarkerProps) => {
   const pulseAnim = useRef(new Animated.Value(1)).current;
   const isPooled = !!pooledMarker;
 

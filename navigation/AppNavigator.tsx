@@ -17,7 +17,7 @@ export type RootStackParamList = {
 
 const Stack = createStackNavigator<RootStackParamList>();
 
-export const AppNavigator: React.FC = () => {
+export const AppNavigator = () => {
   return (
     <NavigationContainer>
       <Stack.Navigator

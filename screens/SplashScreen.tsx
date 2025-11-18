@@ -2,15 +2,15 @@ import React, { useEffect, useRef } from 'react';
 import { View, Text, StyleSheet, Animated } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
+import { StackScreenProps } from '@react-navigation/stack';
 import { Colors, FontSizes, FontWeights, Spacing } from '../styles/theme';
 import { SPLASH_DURATION } from '../utils/constants';
 import { useAuth } from '../context/AuthContext';
+import { RootStackParamList } from '../navigation/AppNavigator';
 
-interface SplashScreenProps {
-  navigation: any;
-}
+type SplashScreenProps = StackScreenProps<RootStackParamList, 'Splash'>;
 
-export const SplashScreen: React.FC<SplashScreenProps> = ({ navigation }) => {
+export const SplashScreen = ({ navigation }: SplashScreenProps) => {
   const fadeAnim = useRef(new Animated.Value(0)).current;
   const scaleAnim = useRef(new Animated.Value(0.8)).current;
   const { isAuthenticated } = useAuth();

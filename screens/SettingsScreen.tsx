@@ -1,17 +1,17 @@
 import React from 'react';
 import { View, StyleSheet, TouchableOpacity } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import { StackScreenProps } from '@react-navigation/stack';
 import { CustomTabView } from '../components/CustomTabView';
 import { ProfileTab } from './ProfileTab';
 import { PrivacyTab } from './PrivacyTab';
 import { FriendsTab } from './FriendsTab';
 import { Colors, Spacing } from '../styles/theme';
+import { RootStackParamList } from '../navigation/AppNavigator';
 
-interface SettingsScreenProps {
-  navigation: any;
-}
+type SettingsScreenProps = StackScreenProps<RootStackParamList, 'Settings'>;
 
-export const SettingsScreen: React.FC<SettingsScreenProps> = ({ navigation }) => {
+export const SettingsScreen = ({ navigation }: SettingsScreenProps) => {
   const tabs = [
     { key: 'profile', title: 'Profile', component: ProfileTab },
     { key: 'privacy', title: 'Privacy', component: PrivacyTab },

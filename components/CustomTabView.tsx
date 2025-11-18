@@ -10,14 +10,14 @@ import { Colors, FontSizes, FontWeights, Spacing } from '../styles/theme';
 interface Tab {
   key: string;
   title: string;
-  component: React.ComponentType<any>;
+  component: React.ComponentType<object>;
 }
 
 interface CustomTabViewProps {
   tabs: Tab[];
 }
 
-export const CustomTabView: React.FC<CustomTabViewProps> = ({ tabs }) => {
+export const CustomTabView = ({ tabs }: CustomTabViewProps) => {
   const [activeTab, setActiveTab] = useState(0);
 
   const ActiveComponent = tabs[activeTab].component;

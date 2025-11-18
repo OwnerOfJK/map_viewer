@@ -101,6 +101,8 @@ export const Sizes = {
   buttonHeight: 48,
   inputHeight: 48,
   tabBarHeight: 50,
+  modalMinHeight: 400,
+  modalMaxHeight: 400,
 };
 
 export default {

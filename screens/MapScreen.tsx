@@ -9,6 +9,7 @@ import {
 } from 'react-native';
 import MapView, { PROVIDER_GOOGLE } from 'react-native-maps';
 import { Ionicons } from '@expo/vector-icons';
+import { StackScreenProps } from '@react-navigation/stack';
 import { MapMarker } from '../components/MapMarker';
 import { FriendDetailModal } from '../components/FriendDetailModal';
 import { Colors, FontSizes, FontWeights, Spacing, BorderRadius, Shadows } from '../styles/theme';
@@ -16,17 +17,16 @@ import { useFriends } from '../context/FriendsContext';
 import { useUser } from '../context/UserContext';
 import { Friend, Region, PooledMarker } from '../utils/types';
 import { MAP_SETTINGS } from '../utils/constants';
+import { RootStackParamList } from '../navigation/AppNavigator';
 
 const { height } = Dimensions.get('window');
 
 // Zoom level threshold for pooling real-time sharers with city-level sharers
 const ZOOM_THRESHOLD = 10;
 
-interface MapScreenProps {
-  navigation: any;
-}
+type MapScreenProps = StackScreenProps<RootStackParamList, 'Map'>;
 
-export const MapScreen: React.FC<MapScreenProps> = ({ navigation }) => {
+export const MapScreen = ({ navigation }: MapScreenProps) => {
   const mapRef = useRef<MapView>(null);
   const slideAnim = useRef(new Animated.Value(height)).current;
 

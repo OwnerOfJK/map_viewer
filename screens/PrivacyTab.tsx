@@ -15,7 +15,7 @@ import { useUser } from '../context/UserContext';
 import { useToast } from '../context/ToastContext';
 import { SharingLevel } from '../utils/types';
 
-export const PrivacyTab: React.FC = () => {
+export const PrivacyTab = () => {
   const { user, setSharingLevel, toggleLocationSharing } = useUser();
   const { showToast } = useToast();
 

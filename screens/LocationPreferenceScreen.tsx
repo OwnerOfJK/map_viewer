@@ -9,19 +9,19 @@ import {
 } from 'react-native';
 import * as Location from 'expo-location';
 import { Ionicons } from '@expo/vector-icons';
+import { StackScreenProps } from '@react-navigation/stack';
 import { Button } from '../components/Button';
 import { Card } from '../components/Card';
 import { Colors, FontSizes, FontWeights, Spacing, BorderRadius } from '../styles/theme';
 import { useUser } from '../context/UserContext';
 import { SharingLevel } from '../utils/types';
+import { RootStackParamList } from '../navigation/AppNavigator';
 
-interface LocationPreferenceScreenProps {
-  navigation: any;
-}
+type LocationPreferenceScreenProps = StackScreenProps<RootStackParamList, 'LocationPreference'>;
 
-export const LocationPreferenceScreen: React.FC<LocationPreferenceScreenProps> = ({
+export const LocationPreferenceScreen = ({
   navigation,
-}) => {
+}: LocationPreferenceScreenProps) => {
   const [selectedLevel, setSelectedLevel] = useState<SharingLevel | null>(null);
   const [loading, setLoading] = useState(true);
   const [locationInfo, setLocationInfo] = useState<{
