@@ -57,12 +57,14 @@ The app uses a calming blue color palette with five shades plus white. Each colo
 
 ### Core Technologies
 
-- **Framework:** React Native with Expo SDK
-- **Navigation:** React Navigation v6+ (Stack Navigator)
-- **State Management:** React Context API or Zustand (lightweight state management)
-- **Map Component:** react-native-maps
+- **Framework:** React Native 0.81.5 with Expo SDK 54
+- **Language:** TypeScript 5.9
+- **React:** 19.1.0
+- **Navigation:** React Navigation v6 (Stack Navigator)
+- **State Management:** React Context API
+- **Map Component:** react-native-maps 1.20.1
 - **Location Services:** expo-location
-- **Styling:** StyleSheet with potential for styled-components
+- **Styling:** StyleSheet with centralized theme
 
 ### Key Dependencies
 
@@ -467,6 +469,40 @@ Use expo-notifications for push notification handling. Request permission on fir
 
 Features to consider for future iterations after MVP is validated:
 
+### TEE Backend Integration (Priority)
+
+The app is designed to integrate with a Trusted Execution Environment (TEE) backend for truly private location sharing:
+
+**Data Flow:**
+```
+📱 React Native App (User)
+    │
+    │  (1) Get GPS via OS API
+    │  (2) Verify enclave attestation
+    │  (3) Encrypt(location) + Sign(payload)
+    │──────────────────────────────────────────▶
+    │             Encrypted upload
+    ▼
+🌐 ROFL REST endpoint (inside Oasis TEE)
+    │
+    │  (4) Decrypt + compute proximity to friends
+    │  (5) Enforce sharing policies (city / exact)
+    │  (6) Encrypt personalized results for user(s)
+    │◀──────────────────────────────────────────
+    │             Encrypted response
+    ▼
+📱 React Native App (User)
+    │
+    │  (7) Decrypt result (e.g. "Friend X within 5 km")
+    │  (8) Display or trigger in-app action / push
+```
+
+**Key Components:**
+- **Oasis ROFL:** TEE computation for location processing
+- **Sapphire Blockchain:** Social graph storage and verification
+- **Enclave Attestation:** Verify TEE integrity before sending data
+- **End-to-End Encryption:** Location data encrypted client-side
+
 ### Enhanced Features
 - **In-App Messaging:** Direct messaging between friends
 - **Location History:** Timeline view of where friends have been (with permission)
@@ -479,7 +515,6 @@ Features to consider for future iterations after MVP is validated:
 ### Technical Enhancements
 - WebSocket connection for real-time location updates (instead of polling)
 - Offline-first architecture with sync when online
-- End-to-end encryption for location data
 - Analytics integration for usage insights (privacy-respecting)
 
 ---
@@ -542,6 +577,15 @@ Recommended folder structure:
 - **Geofencing:** Creating virtual boundaries that trigger notifications when crossed
 - **Background Location:** Tracking user location even when app is not actively open
 - **Reverse Geocoding:** Converting GPS coordinates to human-readable address/city name
+
+---
+
+## Related Documentation
+
+- **CLAUDE.md** - Development guidelines and project context for AI assistants
+- **FRONTEND_ARCHITECTURE.md** - Detailed technical architecture of the frontend
+- **PROGRESS.md** - Implementation progress tracking and roadmap
+- **README.md** - Quick start guide and project overview
 
 ---
 

@@ -40,7 +40,7 @@ All contexts follow the same pattern: context creation, provider component, and 
 ### Mock Data System
 The app currently uses mock data for the MVP:
 - `utils/mockData.ts` contains factory functions: `generateMockFriends()` and `generateMockFriendRequests()`
-- Mock friends (25 total) are loaded in FriendsContext on app initialization
+- Mock friends (50 total, 35 in New York for testing marker pooling) are loaded in FriendsContext on app initialization
 - Async operations (login, friend requests) use `setTimeout` to simulate API calls
 - To implement real backend: replace context method implementations with actual API calls
 
@@ -108,12 +108,6 @@ These are screen-level sub-components, not separate navigation screens.
 4. Add Stack.Screen in AppNavigator component
 5. Use `navigation.navigate('ScreenName')` to navigate
 
-### Working with Mock Data
-Current mock data simulates 25 friends across global cities. When implementing real features:
-- Keep mock data structure intact for testing
-- Replace context method internals (not signatures)
-- FriendsContext methods like `addFriend()` currently just update local state
-
 ## Configuration Files
 
 ### app.json
@@ -141,3 +135,46 @@ The app requires careful permission handling:
 - This is an MVP - no real authentication or backend integration yet
 - PRD.md contains complete product specifications
 - The app follows a "privacy-first" design philosophy - always give users granular control
+
+## Target Architecture (Phase 2)
+
+The app is designed to integrate with a TEE (Trusted Execution Environment) backend for truly private location sharing:
+
+### Data Flow
+```
+📱 React Native App (User)
+    │
+    │  (1) Get GPS via OS API
+    │  (2) Verify enclave attestation
+    │  (3) Encrypt(location) + Sign(payload)
+    │──────────────────────────────────────────▶
+    │             Encrypted upload
+    │
+    ▼
+🌐 ROFL REST endpoint (inside Oasis TEE)
+    │
+    │  (4) Decrypt + compute proximity to friends
+    │  (5) Enforce sharing policies (city / exact)
+    │  (6) Encrypt personalized results for user(s)
+    │◀──────────────────────────────────────────
+    │             Encrypted response
+    ▼
+📱 React Native App (User)
+    │
+    │  (7) Decrypt result (e.g. "Friend X within 5 km")
+    │  (8) Display or trigger in-app action / push
+```
+
+### Key Components
+- **Oasis ROFL**: TEE computation for location processing
+- **Sapphire Blockchain**: Social graph storage and verification
+- **Enclave Attestation**: Verify TEE integrity before sending data
+- **End-to-End Encryption**: Location data encrypted client-side
+
+See `FRONTEND_ARCHITECTURE.md` for detailed technical architecture and `PROGRESS.md` for implementation status.
+
+### Working with Mock Data
+Current mock data simulates 50 friends across global cities. When implementing real features:
+- Keep mock data structure intact for testing
+- Replace context method internals (not signatures)
+- FriendsContext methods like `addFriend()` currently just update local state
